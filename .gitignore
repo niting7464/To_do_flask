@@ -1,0 +1,9 @@
+# Virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+instance/
+database.db
+.env
