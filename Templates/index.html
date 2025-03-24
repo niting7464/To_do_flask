@@ -9,21 +9,34 @@
    <div class="content">
     <h1> Smash task 2.0 </h1>
 
+    {% if tasks | length < 1%}
+    <h3>There are no tasks... Please create one here!</h3>
+
+    {% else %}
     <table>
         <tr>
             <th>task</th>
             <th>Added</th>
             <th>Actions</th>
         </tr>
-        <tr>
-            <td>Content</td>
-            <td>data</td>
-            <td>more</td>
-        </tr>
-    </table>
 
-    <form action="">
-        <input type="text" name="content" id="content">
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task.content }}</td>
+            <td>{{ task.created.strftime("%Y-%m-%d")}}</td>
+            <td>
+                <a href="/delete/{{task.id}}" >Delete</a>
+                <br>
+                <a href="/update/{{task.id}}" >Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <form action="/" method="post">
+        <input type="text" name="content" id="content" />
+        <input type="submit" value="Add task" id="btn_add" />
     </form>
 </div>
 
