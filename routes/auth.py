@@ -2,7 +2,8 @@ from flask import Blueprint, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
 from models.user import User, db 
 from models.task import Task
-from flask_jwt_extended import create_access_token ,get_jwt_identity , jwt_required
+from flask_jwt_extended import create_access_token ,get_jwt_identity , jwt_required, get_jwt
+from extensions import blacklisted_tokens
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -40,9 +41,23 @@ def login():
     else:
         return jsonify({"error": "Invalid credentials"}), 401
     
+# protected route should check if the token is blacklisted.
+@auth_bp.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    return jsonify({"message": "You have access!"})
+    
+# logout user 
+@auth_bp.route("/logout" , methods = ["POST"])
+@jwt_required()
 
+def logout():
+    jti = get_jwt()["jti"]  # extract unique id of token
+    blacklisted_tokens.add(jti)  # add it to the blacklist
+    return jsonify({"message" : "Successfully logged out!"}), 200
+    
+    
 # List of users 
-
 @auth_bp.route("/users" , methods = ["GET"])
 def get_users():
     users = User.query.all()

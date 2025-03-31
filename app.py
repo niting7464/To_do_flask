@@ -1,29 +1,35 @@
 from flask import Flask, jsonify , request 
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, jwt_required
 from models import db 
 from routes.auth import auth_bp
 from routes.tasks import task_bp
+from extensions import jwt
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = "MUMMA"
 
 app.config['JWT_HEADER_TYPE'] = ''      # to remove bearer in front for authoriztion 
-jwt = JWTManager(app) 
+
+jwt.init_app(app)
 
 # ✅ Database Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
 # ✅ Initialize Database
 db.init_app(app)
+
 
 # ✅ Create Tables
 with app.app_context():
     db.create_all()
+    
 
 # ✅ Register Blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(task_bp, url_prefix="/tasks")
+
 
 @app.route("/")
 def home():
