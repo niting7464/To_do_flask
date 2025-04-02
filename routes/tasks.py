@@ -30,15 +30,19 @@ def add_task():
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
+    
+    # Find the highest user_task_id for the logged-in user
+    last_task = Task.query.filter_by(user_id=user_id).order_by(Task.user_task_id.desc()).first()
+    new_user_task_id = (last_task.user_task_id + 1) if last_task else 1
 
     # Create new task
-    new_task = Task(content=content, user_id=user_id)
+    new_task = Task(content=content, user_id=user_id , user_task_id=new_user_task_id)
     db.session.add(new_task)
     db.session.commit()
 
     return jsonify({
         "message": "Task added successfully",
-        "task": {"id": new_task.id, "content": new_task.content}
+        "task": {"id": new_task.user_task_id, "content": new_task.content}
     }), 201
 
 

@@ -2,7 +2,8 @@ from datetime import datetime
 from models import db  # Import shared db instance
 
 class Task(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True) # global id
+    user_task_id = db.Column(db.Integer, nullable=False)  # User-specific ID
     content = db.Column(db.String(200), nullable=False)
     complete = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
