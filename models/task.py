@@ -10,4 +10,8 @@ class Task(db.Model):
 
     # Foreign Key - links to User ID
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'user_task_id', name='user_task_uc'),
+    )
 

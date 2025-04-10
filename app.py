@@ -5,12 +5,16 @@ from routes.auth import auth_bp
 from routes.tasks import task_bp
 from extensions import jwt
 from flask_migrate import Migrate
+from datetime import timedelta
+
 
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = "MUMMA"
 
-app.config['JWT_HEADER_TYPE'] = ''      # to remove bearer in front for authoriztion 
+app.config['JWT_HEADER_TYPE'] = ''     # to remove bearer in front for authoriztion  
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)
 
 jwt.init_app(app)
 

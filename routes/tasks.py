@@ -8,9 +8,9 @@ task_bp = Blueprint("tasks", __name__)
 @task_bp.route("/", methods=["GET"])
 @jwt_required()
 def get_tasks():
-    current_user_id = get_jwt_identity()
-    curr_tasks = Task.query.filter_by(user_id = current_user_id).all()
-    return jsonify([{"id": t.id, "content": t.content, "complete": t.complete , "created_at" : t.created_at , "user_id" : t.user_id} for t in curr_tasks])
+    user_id = get_jwt_identity()
+    tasks = Task.query.filter_by(user_id=user_id).order_by(Task.user_task_id).all()
+    return jsonify([{"id": t.id, "content": t.content, "complete": t.complete , "created_at" : t.created_at , "user_id" : t.user_id} for t in tasks])
 
 # Add a task
 @task_bp.route("/add", methods=["POST"])
@@ -33,10 +33,14 @@ def add_task():
     
     # Find the highest user_task_id for the logged-in user
     last_task = Task.query.filter_by(user_id=user_id).order_by(Task.user_task_id.desc()).first()
-    new_user_task_id = (last_task.user_task_id + 1) if last_task else 1
+    next_user_task_id = (last_task.user_task_id if last_task else 0) + 1
 
     # Create new task
-    new_task = Task(content=content, user_id=user_id , user_task_id=new_user_task_id)
+    new_task = Task(
+        content=content,
+        user_id=user_id,
+        user_task_id=next_user_task_id
+    )
     db.session.add(new_task)
     db.session.commit()
 

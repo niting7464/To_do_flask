@@ -3,15 +3,17 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from models.user import User, db
 from models.task import Task
 from models.revoked_token import RevokedToken
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
 
 import re  # For email validation
 
 auth_bp = Blueprint("auth", __name__)
 
+
 # ✅ Function to validate email format
 def is_valid_email(email):
     return re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", email)
+
 
 # ✅ Register user with validations
 @auth_bp.route("/register", methods=["POST"])
@@ -53,6 +55,7 @@ def register():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Registration failed: {str(e)}"}), 500  
+    
 
 # ✅ Login user with validations
 @auth_bp.route("/login", methods=["POST"])
@@ -68,7 +71,19 @@ def login():
         return jsonify({"error": "Invalid email or password"}), 401
 
     access_token = create_access_token(identity=str(user.id))  # Convert ID to string for JWT
-    return jsonify({"message": "Login successful!", "access_token": access_token}), 200
+    refresh_token = create_refresh_token(identity=str(user.id))
+
+    return jsonify({"message": "Login successful!", "access_token": access_token , "refresh_token" : refresh_token}), 200
+
+
+# Refresh token 
+@auth_bp.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)  # Only allow refresh tokens
+def refresh():
+    current_user = get_jwt_identity()
+    new_access_token = create_access_token(identity=current_user)
+    return jsonify(access_token=new_access_token), 200
+
 
 # ✅ Logout user (Blacklist token)
 @auth_bp.route("/logout", methods=["POST"])
@@ -80,11 +95,13 @@ def logout():
     db.session.commit()
     return jsonify({"message": "Successfully logged out!"}), 200
 
+
 # ✅ List of all users
 @auth_bp.route("/users", methods=["GET"])
 def get_users():
     users = User.query.all()
     return jsonify([{"id": user.id, "username": user.username, "email": user.email, "created_at": user.created_at} for user in users])
+
 
 # ✅ Delete user (Ensures user exists)
 @auth_bp.route("/delete", methods=["DELETE"])
