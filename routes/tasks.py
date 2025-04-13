@@ -4,6 +4,7 @@ from flask_jwt_extended import jwt_required , get_jwt_identity
 import os
 from werkzeug.utils import secure_filename
 from flask import current_app
+from cloudinary.uploader import upload as cloud_upload
 
 
 task_bp = Blueprint("tasks", __name__)
@@ -68,17 +69,16 @@ def add_task():
         from models.task import TaskFile
 
         for file in files:
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
+             if file and allowed_file(file.filename):
+                  upload_result = cloud_upload(file)
+                  file_url = upload_result.get("secure_url")
 
-                db.session.add(TaskFile(
-                    filename=filename,
+                  db.session.add(TaskFile(
+                    filename=file_url,
                     mimetype=file.mimetype,
                     task_id=new_task.id
-                ))
-            else:
+                  ))
+             else:
                 return jsonify({"error": "Invalid file type"}), 400
 
     db.session.commit()

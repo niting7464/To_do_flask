@@ -7,6 +7,8 @@ from extensions import jwt
 from flask_migrate import Migrate
 from datetime import timedelta
 import os 
+import cloudinary
+import cloudinary.uploader
 
 
 
@@ -28,6 +30,14 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max size
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'mp4', 'txt', 'docx'}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+#Cloudinary
+cloudinary.config(
+  cloud_name = 'dqcylcdoa',
+  api_key = '542728284488218',
+  api_secret = '7d1js_Vsween4hKvZHf0ZXirAlg',
+  secure = True
+)
 
 
 
