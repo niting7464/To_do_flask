@@ -3,5 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 # Import models so they are registered with SQLAlchemy
-from models.user import User
-from models.task import Task
+from .user import User
+from .role import Role
+from .permission import Permission
+from .rbac_associations import user_roles, roles_permissions
+
+

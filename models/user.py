@@ -1,5 +1,6 @@
 from datetime import datetime
 from models import db  # Import shared db instance
+from .rbac_associations import user_roles
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -10,3 +11,9 @@ class User(db.Model):
 
     # Relationship: One user can have many tasks
     tasks = db.relationship('Task', backref='user', lazy=True)  
+    roles = db.relationship(
+        'Role',
+        secondary=user_roles,
+        backref=db.backref('users', lazy='dynamic')
+    )
+
