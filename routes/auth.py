@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
 from models.user import User, db
 from models.task import Task
+from models.role import Role
 from models.revoked_token import RevokedToken
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
 
@@ -73,7 +74,16 @@ def login():
     access_token = create_access_token(identity=str(user.id))  # Convert ID to string for JWT
     refresh_token = create_refresh_token(identity=str(user.id))
 
-    return jsonify({"message": "Login successful!", "access_token": access_token , "refresh_token" : refresh_token}), 200
+    # 🆕 Get user's roles
+    user_roles = [role.name for role in user.roles]
+
+    return jsonify({
+        "message": "Login successful!",
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "roles": user_roles    # 🆕 Return roles too!
+    }), 200
+
 
 
 # Refresh token 
@@ -117,3 +127,21 @@ def delete_user():
     db.session.delete(user)
     db.session.commit()
     return jsonify({"message": "User deleted successfully!"}), 200
+
+
+@auth_bp.route('/make-admin', methods=['POST'])
+def make_admin():
+    data = request.get_json()
+    secret_key = data.get('secret_key')
+    if secret_key != "MY_SUPER_SECRET":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    user = User.query.filter_by(email=data.get("email")).first()
+    admin_role = Role.query.filter_by(name="Admin").first()
+    if user and admin_role:
+        user.roles.append(admin_role)
+        db.session.commit()
+        return jsonify({"message": "User promoted to Admin!"}), 200
+    else:
+        return jsonify({"error": "User or Admin role not found."}), 404
+

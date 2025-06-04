@@ -3,6 +3,7 @@ from flask_jwt_extended import JWTManager, jwt_required
 from models import db 
 from routes.auth import auth_bp
 from routes.tasks import task_bp
+from routes.admin_routes import admin_bp
 from extensions import jwt
 from flask_migrate import Migrate
 from datetime import timedelta
@@ -54,6 +55,7 @@ with app.app_context():
 # ✅ Register Blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(task_bp, url_prefix="/tasks")
+app.register_blueprint(admin_bp, url_prefix="/admin")
 
 
 @app.route("/")
